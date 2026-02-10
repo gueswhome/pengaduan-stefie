@@ -12,21 +12,25 @@ $alertType = "";
 $alertMsg = "";
 
 if (isset($_POST['simpan'])) {
-    $nis   = $_POST['nis'];
-    $nama  = $_POST['nama'];
-    $kelas = $_POST['kelas'];
+
+    $nis   = mysqli_real_escape_string($conn, $_POST['nis']);
+    $nama  = mysqli_real_escape_string($conn, $_POST['nama']);
+    $kelas = mysqli_real_escape_string($conn, $_POST['kelas']);
 
     $cek = mysqli_query($conn, "SELECT * FROM siswa WHERE nis='$nis'");
 
     if (mysqli_num_rows($cek) > 0) {
+
         $alert = "showAlert";
         $alertType = "error";
         $alertMsg = "NIS sudah terdaftar!";
+
     } else {
-       mysqli_query($conn, "
-    INSERT INTO siswa (nis, nama, kelas, password)
-    VALUES ('$nis', '$nama', '$kelas', NULL)
-");
+
+        mysqli_query($conn, "
+            INSERT INTO siswa (nis, nama, kelas, password)
+            VALUES ('$nis','$nama','$kelas',NULL)
+        ");
 
         $alert = "showAlert";
         $alertType = "success";
@@ -37,127 +41,155 @@ if (isset($_POST['simpan'])) {
 
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
-    <meta charset="UTF-8">
-    <title>Tambah Siswa</title>
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <style>
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #eef2ff, #f8fafc);
-        }
+<title>Tambah Siswa</title>
 
-        .card {
-            width: 400px;
-            background: white;
-            padding: 30px;
-            border-radius: 18px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            margin: 80px auto;
-        }
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
-        /* BUTTON KEMBALI MODERN */
-        .btn-kembali {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 20px;
-            padding: 10px 16px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, #e0e7ff, #f8fafc);
-            color: #334155;
-            font-weight: 600;
-            font-size: 14px;
-            text-decoration: none;
-            border: 1px solid #e2e8f0;
-            transition: all 0.3s ease;
-        }
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 
-        .btn-kembali span {
-            font-size: 18px;
-            transition: transform 0.3s ease;
-        }
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-        .btn-kembali:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-            background: linear-gradient(135deg, #c7d2fe, #e0f2fe);
-        }
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
-        .btn-kembali:hover span {
-            transform: translateX(-4px);
-        }
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-        h3 {
-            text-align: center;
-            margin-bottom: 25px;
-        }
+<style>
 
-        input {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
-            border-radius: 10px;
-            border: 1px solid #cbd5e1;
-            outline: none;
-        }
+body{
+    font-family:'Inter',sans-serif;
+    background:#f1f5f9;
+}
 
-        input:focus {
-            border-color: #6366f1;
-            box-shadow: 0 0 0 2px rgba(99,102,241,0.2);
-        }
+.main{
+    margin-left:260px;
+    padding:30px;
+}
 
-        button {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 10px;
-            background: linear-gradient(135deg, #4f46e5, #6366f1);
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.3s;
-        }
+.page-header{
+    display:flex;
+    align-items:center;
+    gap:15px;
+    background:white;
+    padding:18px 22px;
+    border-radius:14px;
+    box-shadow:0 5px 20px rgba(0,0,0,0.05);
+    margin-bottom:25px;
+}
 
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(79,70,229,0.4);
-        }
-    </style>
+.page-header .icon{
+    width:45px;
+    height:45px;
+    border-radius:12px;
+    background:linear-gradient(135deg,#6366f1,#4f46e5);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:white;
+    font-size:20px;
+}
+
+.page-header .title{
+    font-size:18px;
+    font-weight:600;
+    margin:0;
+}
+
+.card{
+    border:none;
+    border-radius:16px;
+    box-shadow:0 10px 25px rgba(0,0,0,0.05);
+    max-width:500px;
+}
+
+.form-control{
+    border-radius:10px;
+    padding:10px;
+}
+
+.btn-simpan{
+    border-radius:10px;
+    padding:10px;
+    font-weight:600;
+}
+
+</style>
+
 </head>
+
 <body>
 
-<div class="card">
+<?php include "sidebar.php"; ?>
 
-    <!-- BUTTON KEMBALI -->
-    <a href="../admin/dashboard.php" class="btn-kembali">
-        <span>←</span> Kembali ke Dashboard
-    </a>
+<div class="main">
 
-    <h3>Tambah Data Siswa</h3>
+    <div class="page-header">
 
-    <form method="POST">
-        <input type="text" name="nis" placeholder="NIS" required>
-        <input type="text" name="nama" placeholder="Nama Lengkap" required>
-        <input type="text" name="kelas" placeholder="Kelas" required>
-        <button name="simpan">Simpan</button>
-    </form>
+        <div class="icon">
+            <i class="bi bi-person-plus"></i>
+        </div>
+
+        <h1 class="title">
+            Tambah Data Siswa
+        </h1>
+
+    </div>
+
+
+    <div class="card p-4">
+
+        <form method="POST">
+
+            <div class="mb-3">
+                <label class="form-label">NIS</label>
+                <input type="text" name="nis" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Nama Lengkap</label>
+                <input type="text" name="nama" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Kelas</label>
+                <input type="text" name="kelas" class="form-control" required>
+            </div>
+
+            <button type="submit" name="simpan" class="btn btn-primary btn-simpan w-100">
+
+                <i class="bi bi-save"></i>
+                Simpan Data
+
+            </button>
+
+        </form>
+
+    </div>
+
 </div>
 
+
 <script>
+
 <?php if ($alert == "showAlert") { ?>
-    Swal.fire({
-        toast: true,
-        position: 'top-end',
-        icon: '<?= $alertType ?>',
-        title: '<?= $alertMsg ?>',
-        showConfirmButton: false,
-        timer: 3000,
-        timerProgressBar: true
-    });
+
+Swal.fire({
+    toast:true,
+    position:'top-end',
+    icon:'<?= $alertType ?>',
+    title:'<?= $alertMsg ?>',
+    showConfirmButton:false,
+    timer:3000,
+    timerProgressBar:true
+});
+
 <?php } ?>
+
 </script>
 
 </body>

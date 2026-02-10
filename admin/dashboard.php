@@ -1,5 +1,6 @@
 <?php
 session_start();
+
 if (!isset($_SESSION['admin'])) {
     header("Location: ../auth/login_admin.php");
     exit;
@@ -7,238 +8,216 @@ if (!isset($_SESSION['admin'])) {
 
 include '../config/koneksi.php';
 
-// Total Siswa
-$querySiswa = mysqli_query($conn, "SELECT COUNT(*) AS total FROM siswa");
-$totalSiswa = mysqli_fetch_assoc($querySiswa)['total'];
+// total siswa
+$totalSiswa = mysqli_fetch_assoc(mysqli_query($conn,
+"SELECT COUNT(*) as total FROM siswa"))['total'];
 
-// Total Pengaduan Berdasarkan Status
-$queryMasuk = mysqli_query($conn, "SELECT COUNT(*) AS total FROM pengaduan WHERE status='masuk'");
-$totalMasuk = mysqli_fetch_assoc($queryMasuk)['total'];
+// belum
+$totalMasuk = mysqli_fetch_assoc(mysqli_query($conn,
+"SELECT COUNT(*) as total FROM pengaduan WHERE status='belum'"))['total'];
 
-$queryDilihat = mysqli_query($conn, "SELECT COUNT(*) AS total FROM pengaduan WHERE status='dilihat'");
-$totalDilihat = mysqli_fetch_assoc($queryDilihat)['total'];
+// terbaca
+$totalDilihat = mysqli_fetch_assoc(mysqli_query($conn,
+"SELECT COUNT(*) as total FROM pengaduan WHERE status='terbaca'"))['total'];
 
-$querySelesai = mysqli_query($conn, "SELECT COUNT(*) AS total FROM pengaduan WHERE status='selesai'");
-$totalSelesai = mysqli_fetch_assoc($querySelesai)['total'];
+// selesai
+$totalSelesai = mysqli_fetch_assoc(mysqli_query($conn,
+"SELECT COUNT(*) as total FROM pengaduan WHERE status='selesai'"))['total'];
+
 ?>
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <title>Dashboard Admin</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #f4f6f9;
-        }
+<title>Dashboard Admin</title>
 
-        /* Sidebar modern dengan gradien dan hover */
-        .sidebar {
-            width: 260px;
-            min-height: 100vh;
-            background: linear-gradient(180deg, #1f2937, #111827);
-            color: #fff;
-            position: fixed;
-            padding: 25px 20px;
-            border-radius: 0 20px 20px 0;
-        }
-        .sidebar h4 {
-            font-weight: 700;
-            margin-bottom: 40px;
-            font-size: 1.6rem;
-            letter-spacing: 1px;
-        }
-        .sidebar a {
-            display: flex;
-            align-items: center;
-            padding: 14px 18px;
-            color: #d1d5db;
-            text-decoration: none;
-            border-radius: 12px;
-            margin-bottom: 10px;
-            font-weight: 500;
-            transition: 0.3s;
-            position: relative;
-        }
-        .sidebar a i {
-            margin-right: 12px;
-            font-size: 1.1rem;
-        }
-        .sidebar a::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            width: 5px;
-            height: 100%;
-            border-radius: 8px 0 0 8px;
-            background: transparent;
-            transition: 0.3s;
-        }
-        .sidebar a.active::before,
-        .sidebar a:hover::before {
-            background: linear-gradient(180deg, #4ade80, #16a34a);
-        }
-        .sidebar a.active,
-        .sidebar a:hover {
-            color: #fff;
-            background: rgba(255,255,255,0.05);
-        }
+<!-- Bootstrap -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 
-        /* Main content */
-        .main {
-            margin-left: 260px;
-            padding: 30px;
-        }
-        .topbar {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 30px;
-            align-items: center;
-        }
-        .topbar h5 {
-            font-weight: 600;
-        }
+<!-- Bootstrap Icons -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
 
-        /* Cards modern */
-        .card {
-            border: none;
-            border-radius: 16px;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-            transition: transform 0.2s, box-shadow 0.2s;
-            position: relative;
-        }
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 25px rgba(0,0,0,0.15);
-        }
-        .card h6 {
-            font-weight: 600;
-            margin-bottom: 10px;
-        }
-        .card .icon {
-            font-size: 2.2rem;
-            opacity: 0.15;
-            position: absolute;
-            top: 15px;
-            right: 15px;
-        }
-        .card-total { background: linear-gradient(135deg, #4ade80, #16a34a); color: #fff; }
-        .card-masuk { background: linear-gradient(135deg, #facc15, #eab308); color: #fff; }
-        .card-dilihat { background: linear-gradient(135deg, #60a5fa, #2563eb); color: #fff; }
-        .card-selesai { background: linear-gradient(135deg, #f472b6, #db2777); color: #fff; }
+<!-- Font Awesome (untuk sidebar) -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
-        .card p {
-            font-size: 2rem;
-            font-weight: 700;
-        }
+<!-- Font Inter -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-        /* Quick actions modern */
-        .quick-actions {
-            border-radius: 16px;
-            padding: 25px;
-            background: #fff;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .quick-actions:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 25px rgba(0,0,0,0.1);
-        }
-        .quick-actions h6 {
-            font-weight: 600;
-            margin-bottom: 20px;
-        }
-        .quick-actions .btn {
-            width: 100%;
-            margin-bottom: 12px;
-            font-weight: 500;
-        }
-    </style>
+
+<style>
+
+body{
+    font-family:'Inter',sans-serif;
+    background:#f3f4f6;
+}
+
+/* main content */
+.main{
+    margin-left:260px;
+    padding:30px;
+}
+
+/* card dashboard */
+.card-box{
+    border-radius:20px;
+    padding:25px;
+    color:white;
+    position:relative;
+    overflow:hidden;
+    text-decoration:none;
+    display:block;
+    transition:0.3s;
+}
+
+.card-box:hover{
+    transform:translateY(-5px);
+}
+
+.card-box i.bg-icon{
+    position:absolute;
+    right:20px;
+    top:20px;
+    font-size:60px;
+    opacity:0.2;
+}
+
+/* colors */
+.green{
+    background:linear-gradient(135deg,#22c55e,#16a34a);
+}
+
+.yellow{
+    background:linear-gradient(135deg,#facc15,#eab308);
+}
+
+.blue{
+    background:linear-gradient(135deg,#3b82f6,#2563eb);
+}
+
+.pink{
+    background:linear-gradient(135deg,#ec4899,#db2777);
+}
+
+/* action card */
+.card-action{
+    background:white;
+    padding:25px;
+    border-radius:20px;
+    box-shadow:0 5px 15px rgba(0,0,0,0.05);
+}
+
+</style>
+
 </head>
 <body>
 
-<div class="sidebar">
-    <h4>Admin Panel</h4>
-    <a href="dashboard.php" class="active"><i class="fas fa-home"></i> Dashboard</a>
-    <a href="pengaduan_masuk.php"><i class="fas fa-inbox"></i> Pengaduan Masuk</a>
-    <a href="tambah_siswa.php"><i class="fas fa-user-plus"></i> Tambah Siswa</a>
-    <a href="../auth/logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
-</div>
 
+<!-- Sidebar -->
+<?php include 'sidebar.php'; ?>
+
+
+<!-- Main Content -->
 <div class="main">
-    <div class="topbar">
-        <h5>Dashboard</h5>
-        <span class="text-muted">Halo, Admin 👋</span>
-    </div>
 
-    <div class="row g-4 align-items-stretch">
+<div class="d-flex justify-content-between align-items-center mb-4">
 
-        <!-- Total Siswa -->
-        <div class="col-md-3">
-            <a href="data_siswa.php" class="text-decoration-none">
-                <div class="card card-total p-4 h-100 text-white">
-                    <h6>Total Siswa</h6>
-                    <p><?= $totalSiswa ?></p>
-                    <i class="fas fa-users icon"></i>
-                    <small>Lihat daftar siswa</small>
-                </div>
-            </a>
-        </div>
+<h4 class="fw-semibold">Dashboard</h4>
 
-        <!-- Pengaduan Masuk -->
-        <div class="col-md-3">
-            <a href="pengaduan_masuk.php" class="text-decoration-none">
-                <div class="card card-masuk p-4 h-100 text-white">
-                    <h6>Pengaduan Masuk</h6>
-                    <p><?= $totalMasuk ?></p>
-                    <i class="fas fa-envelope icon"></i>
-                    <small>Belum dilihat</small>
-                </div>
-            </a>
-        </div>
-
-        <!-- Pengaduan Dilihat -->
-        <div class="col-md-3">
-            <a href="pengaduan_dilihat.php" class="text-decoration-none">
-                <div class="card card-dilihat p-4 h-100 text-white">
-                    <h6>Pengaduan Dilihat</h6>
-                    <p><?= $totalDilihat ?></p>
-                    <i class="fas fa-eye icon"></i>
-                    <small>Sudah diperiksa</small>
-                </div>
-            </a>
-        </div>
-
-        <!-- Pengaduan Selesai -->
-        <div class="col-md-3">
-            <a href="pengaduan_selesai.php" class="text-decoration-none">
-                <div class="card card-selesai p-4 h-100 text-white">
-                    <h6>Pengaduan Selesai</h6>
-                    <p><?= $totalSelesai ?></p>
-                    <i class="fas fa-check icon"></i>
-                    <small>Sudah ditindaklanjuti</small>
-                </div>
-            </a>
-        </div>
-
-    </div>
-
-    <div class="row mt-4">
-        <div class="col-md-4">
-            <div class="quick-actions">
-                <h6>Aksi Cepat</h6>
-                <a href="tambah_siswa.php" class="btn btn-primary"><i class="fas fa-user-plus"></i> Tambah Siswa</a>
-                <a href="tambah_jenis_pengaduan.php" class="btn btn-outline-primary"><i class="fas fa-plus"></i> Tambah Jenis Pengaduan</a>
-            </div>
-        </div>
-    </div>
+<div class="fw-medium">
+    Halo, Admin 👋
 </div>
+
+</div>
+
+
+<div class="row g-4">
+
+<!-- total siswa -->
+<div class="col-md-3">
+
+<a href="data_siswa.php" class="card-box green">
+
+<i class="bi bi-people bg-icon"></i>
+
+<h6>Total Siswa</h6>
+
+<h2><?= $totalSiswa ?></h2>
+
+<small>Lihat daftar siswa</small>
+
+</a>
+
+</div>
+
+
+<!-- pengaduan masuk -->
+<div class="col-md-3">
+<a href="pengaduan_masuk.php" class="card-box yellow">
+<i class="bi bi-envelope bg-icon"></i>
+<h6>Pengaduan Masuk</h6>
+<h2><?= $totalMasuk ?></h2>
+<small>Belum dibaca</small>
+</a>
+</div>
+
+
+<!-- pengaduan dilihat -->
+<div class="col-md-3">
+<a href="pengaduan_dilihat.php" class="card-box blue">
+<i class="bi bi-eye bg-icon"></i>
+<h6>Pengaduan Dilihat</h6>
+<h2><?= $totalDilihat ?></h2>
+<small>Sudah dibaca</small>
+</a>
+</div>
+
+
+<!-- pengaduan selesai -->
+<div class="col-md-3">
+<a href="pengaduan_selesai.php" class="card-box pink">
+<i class="bi bi-check-circle bg-icon"></i>
+<h6>Pengaduan Selesai</h6>
+<h2><?= $totalSelesai ?></h2>
+<small>Sudah selesai</small>
+</a>
+</div>
+
+
+
+<!-- aksi cepat -->
+<div class="col-md-4">
+
+<div class="card-action">
+
+<h6 class="mb-3">Aksi Cepat</h6>
+
+<a href="tambah_siswa.php" class="btn btn-primary w-100 mb-2">
+
+<i class="bi bi-person-plus"></i>
+Tambah Siswa
+
+</a>
+
+<a href="tambah_jenis_pengaduan.php" class="btn btn-outline-primary w-100">
+
+<i class="bi bi-plus-circle"></i>
+Tambah Jenis Pengaduan
+
+</a>
+
+</div>
+
+</div>
+
+
+</div>
+
+</div>
+
 
 </body>
 </html>

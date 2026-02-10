@@ -7,15 +7,17 @@ if (!isset($_SESSION['admin'])) {
 
 include '../config/koneksi.php';
 
+// ambil & hapus session sekali tampil
 $success = $_SESSION['success'] ?? '';
-unset($_SESSION['success']);
+$error   = $_SESSION['error'] ?? '';
+unset($_SESSION['success'], $_SESSION['error']);
 
 $search = $_GET['search'] ?? '';
 
 $query = mysqli_query($conn, "
     SELECT * FROM siswa 
-    WHERE nis LIKE '%$search%'
-       OR nama LIKE '%$search%'
+    WHERE nis   LIKE '%$search%'
+       OR nama  LIKE '%$search%'
        OR kelas LIKE '%$search%'
     ORDER BY kelas, nama
 ");
@@ -28,6 +30,7 @@ $query = mysqli_query($conn, "
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
+
 <body class="bg-light">
 
 <div class="container py-5">
@@ -39,14 +42,23 @@ $query = mysqli_query($conn, "
                 <a href="./dashboard.php" class="btn btn-secondary btn-sm">← Kembali</a>
             </div>
 
-            <!-- ALERT SUKSES -->
-            <?php if ($success): ?>
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <!-- ALERT SUCCESS -->
+            <?php if (!empty($success)): ?>
+                <div class="alert alert-success alert-dismissible fade show">
                     <?= htmlspecialchars($success) ?>
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             <?php endif; ?>
 
+            <!-- ALERT ERROR (HTML DIIZINKAN) -->
+            <?php if (!empty($error)): ?>
+                <div class="alert alert-danger alert-dismissible fade show">
+                    <?= $error ?>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            <?php endif; ?>
+
+            <!-- SEARCH -->
             <form method="GET" class="mb-3 d-flex gap-2">
                 <input type="text" name="search" class="form-control"
                        placeholder="Cari NIS / Nama / Kelas..."
@@ -55,6 +67,7 @@ $query = mysqli_query($conn, "
                 <a href="./data_siswa.php" class="btn btn-secondary">Reset</a>
             </form>
 
+            <!-- TABLE -->
             <div class="table-responsive">
                 <table class="table table-bordered align-middle">
                     <thead class="table-light text-center">
@@ -67,24 +80,26 @@ $query = mysqli_query($conn, "
                         </tr>
                     </thead>
                     <tbody>
-                    <?php if (mysqli_num_rows($query) > 0): ?>
-                        <?php $no = 1; while ($s = mysqli_fetch_assoc($query)): ?>
-                        <tr>
-                            <td class="text-center"><?= $no++ ?></td>
-                            <td><?= htmlspecialchars($s['nis']) ?></td>
-                            <td><?= htmlspecialchars($s['nama']) ?></td>
-                            <td><?= htmlspecialchars($s['kelas']) ?></td>
-                            <td class="text-center">
-                                <a href="./edit_siswa.php?id=<?= $s['id'] ?>"
-                                   class="btn btn-warning btn-sm">Edit</a>
 
-                                <a href="./hapus_siswa.php?id=<?= $s['id'] ?>"
-                                   class="btn btn-danger btn-sm"
-                                   onclick="return confirm('Yakin ingin menghapus siswa ini?')">
-                                   Hapus
-                                </a>
-                            </td>
-                        </tr>
+                    <?php if (mysqli_num_rows($query) > 0): ?>
+                        <?php $no = 1; ?>
+                        <?php while ($s = mysqli_fetch_assoc($query)): ?>
+                            <tr>
+                                <td class="text-center"><?= $no++ ?></td>
+                                <td><?= htmlspecialchars($s['nis']) ?></td>
+                                <td><?= htmlspecialchars($s['nama']) ?></td>
+                                <td><?= htmlspecialchars($s['kelas']) ?></td>
+                                <td class="text-center">
+                                    <a href="./edit_siswa.php?id=<?= $s['id'] ?>"
+                                       class="btn btn-warning btn-sm">Edit</a>
+
+                                    <a href="./hapus_siswa.php?id=<?= $s['id'] ?>"
+                                       class="btn btn-danger btn-sm"
+                                       onclick="return confirm('Yakin ingin menghapus siswa ini?')">
+                                       Hapus
+                                    </a>
+                                </td>
+                            </tr>
                         <?php endwhile; ?>
                     <?php else: ?>
                         <tr>
@@ -93,6 +108,7 @@ $query = mysqli_query($conn, "
                             </td>
                         </tr>
                     <?php endif; ?>
+
                     </tbody>
                 </table>
             </div>
