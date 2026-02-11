@@ -16,7 +16,7 @@ $query = mysqli_query($conn, "
         pengaduan.created_at,
         siswa.nama,
         siswa.kelas,
-        jenis_pengaduan.nama AS jenis_pengaduan
+        jenis_pengaduan.jenis_pengaduan_baru AS jenis_pengaduan
     FROM pengaduan
     JOIN siswa 
         ON pengaduan.nis = siswa.nis

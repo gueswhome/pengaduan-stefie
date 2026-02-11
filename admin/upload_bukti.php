@@ -96,9 +96,10 @@ if (!$data) {
                     </div>
                 </div>
 
-                <a href="pengaduan_masuk.php" class="btn btn-secondary mt-3">
-                    Kembali
-                </a>
+                <a href="../admin/dashboard.php" class="btn btn-secondary">
+    Kembali
+</a>
+
 
             <!-- JIKA BUKTI BELUM ADA -->
             <?php else: ?>

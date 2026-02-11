@@ -9,15 +9,24 @@ if (!isset($_SESSION['nis'])) {
 
 $nis = $_SESSION['nis'];
 
-
-
 $pengaduan = mysqli_query($conn, "
-    SELECT pengaduan.*, jenis_pengaduan.nama AS jenis_nama
+    SELECT 
+        pengaduan.id,
+        pengaduan.nis,
+        pengaduan.status,
+        pengaduan.created_at,
+        siswa.nama,
+        siswa.kelas,
+        jenis_pengaduan.jenis_pengaduan_baru AS jenis_nama
     FROM pengaduan
-    JOIN jenis_pengaduan ON pengaduan.jenis_id = jenis_pengaduan.id
+    JOIN siswa 
+        ON pengaduan.nis = siswa.nis
+    LEFT JOIN jenis_pengaduan 
+        ON pengaduan.jenis_id = jenis_pengaduan.id
     WHERE pengaduan.nis='$nis'
     ORDER BY pengaduan.created_at DESC
 ");
+
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -45,6 +54,7 @@ $pengaduan = mysqli_query($conn, "
     </style>
 </head>
 <body>
+
 
 <div class="container py-5">
 
@@ -106,12 +116,18 @@ $pengaduan = mysqli_query($conn, "
                             <?php endif; ?>
                         </td>
                         <td><?= date('d M Y', strtotime($row['created_at'])); ?></td>
-                        <td class="d-flex gap-1">
-                            <a href="detail_pengaduan.php?id=<?= $row['id']; ?>"
-                               class="btn btn-sm btn-outline-primary">
-                                Lihat
-                            </a>
-                        </td>
+                       <td class="d-flex gap-1">
+    <a href="detail_pengaduan.php?id=<?= $row['id']; ?>" class="btn btn-sm btn-outline-primary">
+        Lihat
+    </a>
+
+    <?php if($row['status'] != 'selesai'): // cuma bisa edit jika belum selesai ?>
+        <a href="edit_pengaduan.php?id=<?= $row['id']; ?>" class="btn btn-sm btn-outline-warning">
+            Edit
+        </a>
+    <?php endif; ?>
+</td>
+
                     </tr>
                 <?php endwhile; ?>
 

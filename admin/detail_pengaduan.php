@@ -21,13 +21,14 @@ $query = mysqli_query($conn, "
         pengaduan.*,
         siswa.nama,
         siswa.kelas,
-        jenis_pengaduan.nama AS nama_jenis
+        jenis_pengaduan.jenis_pengaduan_baru AS nama_jenis
     FROM pengaduan
     JOIN siswa ON pengaduan.nis = siswa.nis
     LEFT JOIN jenis_pengaduan ON pengaduan.jenis_id = jenis_pengaduan.id
     WHERE pengaduan.id = '$id'
     LIMIT 1
 ");
+
 
 $data = mysqli_fetch_assoc($query);
 
@@ -49,18 +50,19 @@ if ($data['status'] === 'belum') {
     ");
 
  
-    $query = mysqli_query($conn, "
-        SELECT 
-            pengaduan.*,
-            siswa.nama,
-            siswa.kelas,
-            jenis_pengaduan.nama AS nama_jenis
-        FROM pengaduan
-        JOIN siswa ON pengaduan.nis = siswa.nis
-        LEFT JOIN jenis_pengaduan ON pengaduan.jenis_id = jenis_pengaduan.id
-        WHERE pengaduan.id = '$id'
-        LIMIT 1
-    ");
+   $query = mysqli_query($conn, "
+    SELECT 
+        pengaduan.*,
+        siswa.nama,
+        siswa.kelas,
+        jenis_pengaduan.jenis_pengaduan_baru AS nama_jenis
+    FROM pengaduan
+    JOIN siswa ON pengaduan.nis = siswa.nis
+    LEFT JOIN jenis_pengaduan ON pengaduan.jenis_id = jenis_pengaduan.id
+    WHERE pengaduan.id = '$id'
+    LIMIT 1
+");
+
 
     $data = mysqli_fetch_assoc($query);
 }
@@ -185,17 +187,21 @@ th { width:220px; }
 </table>
 
 <div class="mt-4">
-<a href="pengaduan_masuk.php" class="btn btn-secondary">Kembali</a>
-<?php if ($data['status'] !== 'selesai'): ?>
-<a href="upload_bukti.php?id=<?= $data['id'] ?>" class="btn btn-success">
-✔ Upload Bukti & Selesaikan
-</a>
-<?php endif; ?>
-</div>
+    <?php 
+    $kembali = $_SERVER['HTTP_REFERER'] ?? 'pengaduan_masuk.php';
+    ?>
+    <a href="<?= htmlspecialchars($kembali) ?>" class="btn btn-secondary">Kembali</a>
 
+    <?php if ($data['status'] !== 'selesai'): ?>
+        <a href="upload_bukti.php?id=<?= $data['id'] ?>&redirect=<?= urlencode($_SERVER['REQUEST_URI']) ?>" class="btn btn-success">
+    ✔ Upload Bukti & Selesaikan
+</a>
+    <?php endif; ?>
+</div>
 </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+

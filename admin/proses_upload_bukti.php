@@ -38,8 +38,10 @@ if (isset($_FILES['bukti']) && $_FILES['bukti']['error'] == 0) {
             WHERE id = '$id'
         ");
 
-        header("Location: pengaduan_masuk.php");
-        exit;
+        $redirect = $_POST['redirect'] ?? "detail_pengaduan.php?id=$id";
+
+header("Location: $redirect");
+exit;
 
     } else {
         echo "<script>alert('Upload gagal');history.back();</script>";

@@ -8,7 +8,7 @@ if (!isset($_SESSION['nis'])) {
 }
 
 // ambil jenis pengaduan
-$jenis = mysqli_query($conn, "SELECT * FROM jenis_pengaduan ORDER BY nama ASC");
+$jenis = mysqli_query($conn, "SELECT * FROM jenis_pengaduan ORDER BY jenis_pengaduan_baru ASC");
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -25,28 +25,23 @@ $jenis = mysqli_query($conn, "SELECT * FROM jenis_pengaduan ORDER BY nama ASC");
 
         <form action="simpan_pengaduan.php" method="POST" enctype="multipart/form-data">
 
-
             <div class="mb-3">
                 <label class="form-label">Jenis Pengaduan</label>
                 <select name="jenis_id" class="form-select" required>
                     <option value="">-- Pilih Jenis --</option>
                     <?php while ($j = mysqli_fetch_assoc($jenis)): ?>
                         <option value="<?= $j['id']; ?>">
-                            <?= htmlspecialchars($j['nama']); ?>
+                            <?= htmlspecialchars($j['jenis_pengaduan_baru']); ?>
                         </option>
                     <?php endwhile; ?>
                 </select>
             </div>
 
-    
-
-      
             <div class="mb-3">
                 <label class="form-label">Isi Pengaduan</label>
                 <textarea name="isi_pengaduan" rows="4" class="form-control" required></textarea>
             </div>
 
-            
             <div class="mb-3">
                 <label class="form-label">Foto Pendukung (opsional)</label>
                 <input type="file" name="foto" class="form-control" accept="image/*">

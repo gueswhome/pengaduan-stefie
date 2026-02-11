@@ -24,59 +24,49 @@ if (!$siswa) {
 
 $nis = $siswa['nis'];
 
-// cek pengaduan TERAKHIR
+// ambil semua pengaduan siswa
 $qpengaduan = mysqli_query($conn, "
     SELECT status 
     FROM pengaduan 
     WHERE nis='$nis'
     ORDER BY id DESC
-    LIMIT 1
 ");
 
 if (mysqli_num_rows($qpengaduan) > 0) {
-    $p = mysqli_fetch_assoc($qpengaduan);
+    $statuses = [];
+    
+    // map status → teks + warna
+    $map = [
+        'masuk'    => ['Pengaduan Masuk', 'color:#ca8a04;font-weight:600;'], // kuning
+        'belum'    => ['Pengaduan Masuk', 'color:#ca8a04;font-weight:600;'], // alias
+        'dilihat'  => ['Dilihat', 'color:#2563eb;font-weight:600;'],        // biru
+        'terbaca'  => ['Dilihat', 'color:#2563eb;font-weight:600;'],        // biru
+        'selesai'  => ['Selesai', 'color:#16a34a;font-weight:600;'],        // hijau
+    ];
 
-    // 🔒 FIX UTAMA: trim + lowercase
-    $status = strtolower(trim($p['status']));
-
- $map = [
-    'masuk' => [
-        'Masuk',
-        'color:#ca8a04;font-weight:600;'
-    ],
-    'dilihat' => [
-        'Dilihat',
-        'color:#2563eb;font-weight:600;'
-    ],
-    'terbaca' => [ // ⬅️ TAMBAHAN INI
-        'Dilihat',
-        'color:#2563eb;font-weight:600;'
-    ],
-    'selesai' => [
-        'Selesai',
-        'color:#be185d;font-weight:600;'
-    ],
-];
-
-
-
-    if (isset($map[$status])) {
-        [$text, $style] = $map[$status];
-    } else {
-        $text  = ucfirst($status);
-        $style = 'color:#6b7280;font-weight:600;';
+    while ($p = mysqli_fetch_assoc($qpengaduan)) {
+        $status_key = strtolower(trim($p['status']));
+        if (isset($map[$status_key])) {
+            $statuses[] = "<span style='{$map[$status_key][1]}'>({$map[$status_key][0]})</span>";
+        } else {
+            $statuses[] = "<span style='color:#6b7280;font-weight:600;'>(" . ucfirst($status_key) . ")</span>";
+        }
     }
+
+
+    $status_text = implode(' / ', array_reverse($statuses)); 
+
 
     $_SESSION['error'] = "
         Data siswa tidak bisa dihapus karena masih memiliki pengaduan
-        <span style='$style'>($text)</span>
+        $status_text
     ";
 
     header("Location: data_siswa.php");
     exit;
 }
 
-// ✅ TIDAK ADA PENGADUAN → BOLEH HAPUS
+
 mysqli_query($conn, "DELETE FROM siswa WHERE id='$id'");
 $_SESSION['success'] = "Data siswa berhasil dihapus";
 

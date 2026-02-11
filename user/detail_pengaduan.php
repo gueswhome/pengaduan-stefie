@@ -10,12 +10,13 @@ if (!isset($_SESSION['nis'])) {
 $id  = $_GET['id'] ?? '';
 $nis = $_SESSION['nis'];
 
+// Query perbaikan: gunakan nama kolom yang benar
 $query = mysqli_query($conn, "
     SELECT 
         pengaduan.*,
-        jenis_pengaduan.nama AS jenis_nama
+        jenis_pengaduan.jenis_pengaduan_baru AS jenis_nama
     FROM pengaduan
-    JOIN jenis_pengaduan ON pengaduan.jenis_id = jenis_pengaduan.id
+    LEFT JOIN jenis_pengaduan ON pengaduan.jenis_id = jenis_pengaduan.id
     WHERE pengaduan.id='$id' AND pengaduan.nis='$nis'
 ");
 
@@ -81,7 +82,7 @@ if (!$data) {
         <table class="table table-borderless">
             <tr>
                 <th width="200">Jenis Pengaduan</th>
-                <td><?= htmlspecialchars($data['jenis_nama']); ?></td>
+                <td><?= htmlspecialchars($data['jenis_nama'] ?? '-'); ?></td>
             </tr>
 
             <tr>

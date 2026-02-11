@@ -16,5 +16,5 @@ $id = $_GET['id'];
 
 mysqli_query($conn, "DELETE FROM jenis_pengaduan WHERE id='$id'");
 
-header("Location: tambah_jenis_pengaduan.php");
+header("Location: tambah_jenis_pengaduan.php?status=hapus");
 exit;
